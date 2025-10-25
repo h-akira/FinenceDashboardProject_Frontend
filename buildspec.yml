@@ -1,0 +1,19 @@
+version: 0.2
+
+env:
+  variables:
+    S3_BUCKET: "s3-fdp-contents"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+  pre_build:
+    commands:
+      - echo "Installing Frontend dependencies"
+      - npm ci
+  build:
+    commands:
+      - echo "Building and deploying Frontend..."
+      - npm run build
+      - aws s3 sync dist/ s3://$S3_BUCKET/CloudFront/ --delete
