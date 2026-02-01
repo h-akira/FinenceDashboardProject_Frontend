@@ -37,29 +37,22 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'M2',
-  data() {
-    const today = new Date()
-    const tenYearsAgo = new Date()
-    tenYearsAgo.setFullYear(today.getFullYear() - 10)
+<script setup>
+import { ref, computed } from 'vue'
 
-    return {
-      startDate: tenYearsAgo.toISOString().split('T')[0],
-      endDate: today.toISOString().split('T')[0]
-    }
-  },
-  computed: {
-    chartUrl() {
-      return `https://tradingeconomics.com/embed/?s=japanmonsupm2&v=202509111345V20230410&lang=all&h=300&w=600&ref=/japan/money-supply-m2&type=spline&d1=${this.startDate}&d2=${this.endDate}`
-    }
-  },
-  methods: {
-    updateChart() {
-      // chartUrl computed property will automatically update
-    }
-  }
+const today = new Date()
+const tenYearsAgo = new Date()
+tenYearsAgo.setFullYear(today.getFullYear() - 10)
+
+const startDate = ref(tenYearsAgo.toISOString().split('T')[0])
+const endDate = ref(today.toISOString().split('T')[0])
+
+const chartUrl = computed(() => {
+  return `https://tradingeconomics.com/embed/?s=japanmonsupm2&v=202509111345V20230410&lang=all&h=300&w=600&ref=/japan/money-supply-m2&type=spline&d1=${startDate.value}&d2=${endDate.value}`
+})
+
+const updateChart = () => {
+  // chartUrl computed property will automatically update
 }
 </script>
 

@@ -43,108 +43,103 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Exchange',
-  data() {
-    return {
-      selectedPair: 'OANDA:USDJPY',
-      selectedIndicator: 'Ichimoku',
-      currentHeight: 700,
-      widget: null,
-      isResizing: false
-    }
-  },
-  mounted() {
-    this.loadTradingViewScript()
-  },
-  methods: {
-    loadTradingViewScript() {
-      if (window.TradingView) {
-        this.createWidget()
-        return
-      }
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-      const script = document.createElement('script')
-      script.src = 'https://s3.tradingview.com/tv.js'
-      script.async = true
-      script.onload = () => {
-        this.createWidget()
-      }
-      document.head.appendChild(script)
-    },
+const selectedPair = ref('OANDA:USDJPY')
+const selectedIndicator = ref('Ichimoku')
+const currentHeight = ref(700)
+let widget = null
+let isResizing = false
 
-    createWidget() {
-      const studiesArray = this.getStudiesArray(this.selectedIndicator)
+const getStudiesArray = (indicator) => {
+  if (indicator === 'Ichimoku') {
+    return ['STD;Ichimoku%1Cloud']
+  } else if (indicator === 'Bollinger_SMA') {
+    return ['STD;Bollinger_Bands', 'STD;SMA']
+  }
+  return []
+}
 
-      if (this.widget) {
-        this.widget.remove()
-      }
+const createWidget = () => {
+  const studiesArray = getStudiesArray(selectedIndicator.value)
 
-      this.widget = new TradingView.widget({
-        width: '100%',
-        height: this.currentHeight,
-        symbol: this.selectedPair,
-        interval: 'D',
-        timezone: 'Asia/Tokyo',
-        theme: 'light',
-        style: '1',
-        locale: 'ja',
-        details: true,
-        enable_publishing: false,
-        allow_symbol_change: true,
-        studies: studiesArray,
-        container_id: 'tradingview_usdjpy'
-      })
-    },
+  if (widget) {
+    widget.remove()
+  }
 
-    getStudiesArray(indicator) {
-      if (indicator === 'Ichimoku') {
-        return ['STD;Ichimoku%1Cloud']
-      } else if (indicator === 'Bollinger_SMA') {
-        return ['STD;Bollinger_Bands', 'STD;SMA']
-      }
-      return []
-    },
+  widget = new TradingView.widget({
+    width: '100%',
+    height: currentHeight.value,
+    symbol: selectedPair.value,
+    interval: 'D',
+    timezone: 'Asia/Tokyo',
+    theme: 'light',
+    style: '1',
+    locale: 'ja',
+    details: true,
+    enable_publishing: false,
+    allow_symbol_change: true,
+    studies: studiesArray,
+    container_id: 'tradingview_usdjpy'
+  })
+}
 
-    updateWidget() {
-      this.createWidget()
-    },
+const loadTradingViewScript = () => {
+  if (window.TradingView) {
+    createWidget()
+    return
+  }
 
-    startResize(event) {
-      this.isResizing = true
-      document.addEventListener('mousemove', this.resize)
-      document.addEventListener('mouseup', this.stopResize)
-    },
+  const script = document.createElement('script')
+  script.src = 'https://s3.tradingview.com/tv.js'
+  script.async = true
+  script.onload = () => {
+    createWidget()
+  }
+  document.head.appendChild(script)
+}
 
-    resize(event) {
-      if (!this.isResizing) return
+const updateWidget = () => {
+  createWidget()
+}
 
-      const container = document.querySelector('.tradingview-widget-container')
-      const rect = container.getBoundingClientRect()
-      const newHeight = event.clientY - rect.top
+const resize = (event) => {
+  if (!isResizing) return
 
-      if (newHeight > 300 && newHeight < 1200) {
-        this.currentHeight = newHeight
-        this.updateWidget()
-      }
-    },
+  const container = document.querySelector('.tradingview-widget-container')
+  const rect = container.getBoundingClientRect()
+  const newHeight = event.clientY - rect.top
 
-    stopResize() {
-      this.isResizing = false
-      document.removeEventListener('mousemove', this.resize)
-      document.removeEventListener('mouseup', this.stopResize)
-    }
-  },
-
-  beforeUnmount() {
-    if (this.widget) {
-      this.widget.remove()
-    }
-    document.removeEventListener('mousemove', this.resize)
-    document.removeEventListener('mouseup', this.stopResize)
+  if (newHeight > 300 && newHeight < 1200) {
+    currentHeight.value = newHeight
+    updateWidget()
   }
 }
+
+const stopResize = () => {
+  isResizing = false
+  document.removeEventListener('mousemove', resize)
+  document.removeEventListener('mouseup', stopResize)
+}
+
+const startResize = () => {
+  isResizing = true
+  document.addEventListener('mousemove', resize)
+  document.addEventListener('mouseup', stopResize)
+}
+
+onMounted(() => {
+  loadTradingViewScript()
+})
+
+onBeforeUnmount(() => {
+  if (widget) {
+    widget.remove()
+  }
+  document.removeEventListener('mousemove', resize)
+  document.removeEventListener('mouseup', stopResize)
+})
 </script>
 
 <style scoped>

@@ -6,7 +6,7 @@ import Home from './components/Home.vue'
 // Bootstrap CSS
 import 'bootstrap/dist/css/bootstrap.min.css'
 // Bootstrap JavaScript (optional - for interactive components)
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import 'bootstrap'
 
 import './index.css'
 

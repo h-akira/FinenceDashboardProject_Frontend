@@ -26,45 +26,43 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App',
-  data() {
-    return {
-      authStatus: null
-    }
-  },
-  async mounted() {
-    await this.checkAuthStatus()
-    this.handleRedirectAfterLogin()
-  },
-  methods: {
-    async checkAuthStatus() {
-      try {
-        const response = await fetch('/accounts/status')
-        this.authStatus = await response.json()
-      } catch (error) {
-        console.error('Auth status check failed:', error)
-        this.authStatus = { authenticated: false }
-      }
-    },
-    handleRedirectAfterLogin() {
-      // Check if there's a 'next' parameter in the URL
-      const urlParams = new URLSearchParams(window.location.search)
-      const nextPath = urlParams.get('next')
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-      if (nextPath && this.authStatus && this.authStatus.authenticated) {
-        // Remove the 'next' parameter from URL and navigate to the target path
-        const url = new URL(window.location)
-        url.searchParams.delete('next')
-        window.history.replaceState({}, '', url.pathname + url.search)
+const router = useRouter()
+const authStatus = ref(null)
 
-        // Navigate to the target path using Vue Router
-        this.$router.push(nextPath || '/')
-      }
-    }
+const checkAuthStatus = async () => {
+  try {
+    const response = await fetch('/accounts/status')
+    authStatus.value = await response.json()
+  } catch (error) {
+    console.error('Auth status check failed:', error)
+    authStatus.value = { authenticated: false }
   }
 }
+
+const handleRedirectAfterLogin = () => {
+  // Check if there's a 'next' parameter in the URL
+  const urlParams = new URLSearchParams(window.location.search)
+  const nextPath = urlParams.get('next')
+
+  if (nextPath && authStatus.value && authStatus.value.authenticated) {
+    // Remove the 'next' parameter from URL and navigate to the target path
+    const url = new URL(window.location)
+    url.searchParams.delete('next')
+    window.history.replaceState({}, '', url.pathname + url.search)
+
+    // Navigate to the target path using Vue Router
+    router.push(nextPath || '/')
+  }
+}
+
+onMounted(async () => {
+  await checkAuthStatus()
+  handleRedirectAfterLogin()
+})
 </script>
 
 <style scoped>

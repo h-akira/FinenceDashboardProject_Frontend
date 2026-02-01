@@ -40,46 +40,33 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue'
 import Exchange from './Exchange.vue'
 import JP225 from './JP225.vue'
 import Calendar from './Calendar.vue'
 import MarketSummary from './MarketSummary.vue'
 import M2 from './M2.vue'
 
-export default {
-  name: 'Home',
-  components: {
-    Exchange,
-    JP225,
-    Calendar,
-    MarketSummary,
-    M2
-  },
-  data() {
-    return {
-      columnsPerRow: '2',
-      availableCharts: [
-        { id: 'market-summary', label: 'MarketSummary', component: 'MarketSummary', visible: true },
-        { id: 'calendar', label: 'Calendar', component: 'Calendar', visible: true },
-        { id: 'exchange', label: 'Exchange', component: 'Exchange', visible: true },
-        { id: 'jp225', label: 'JP225', component: 'JP225', visible: true },
-        { id: 'm2', label: 'M2', component: 'M2', visible: true }
-      ]
-    }
-  },
-  computed: {
-    visibleCharts() {
-      return this.availableCharts.filter(chart => chart.visible)
-    },
-    columnClass() {
-      const colMap = {
-        '1': 'col-12',
-        '2': 'col-12 col-lg-6',
-        '3': 'col-12 col-lg-4'
-      }
-      return colMap[this.columnsPerRow]
-    }
+const columnsPerRow = ref('2')
+const availableCharts = ref([
+  { id: 'market-summary', label: 'MarketSummary', component: MarketSummary, visible: true },
+  { id: 'calendar', label: 'Calendar', component: Calendar, visible: true },
+  { id: 'exchange', label: 'Exchange', component: Exchange, visible: true },
+  { id: 'jp225', label: 'JP225', component: JP225, visible: true },
+  { id: 'm2', label: 'M2', component: M2, visible: true }
+])
+
+const visibleCharts = computed(() => {
+  return availableCharts.value.filter(chart => chart.visible)
+})
+
+const columnClass = computed(() => {
+  const colMap = {
+    '1': 'col-12',
+    '2': 'col-12 col-lg-6',
+    '3': 'col-12 col-lg-4'
   }
-}
+  return colMap[columnsPerRow.value]
+})
 </script>

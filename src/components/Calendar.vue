@@ -11,44 +11,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Calendar',
-  data() {
-    return {
-      scriptLoaded: false
-    }
-  },
-  mounted() {
-    this.loadWidget()
-  },
-  methods: {
-    loadWidget() {
-      const script = document.createElement('script')
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js'
-      script.async = true
-      script.type = 'text/javascript'
-      script.innerHTML = JSON.stringify({
-        width: '100%',
-        height: '600',
-        colorTheme: 'light',
-        isTransparent: false,
-        locale: 'ja',
-        importanceFilter: '0,1',
-        currencyFilter: 'AUD,USD,CAD,EUR,FRF,DEM,JPY,MXN,CHF,TRL,GBP'
-      })
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-      this.$refs.container.appendChild(script)
-    }
-  },
-  beforeUnmount() {
-    // Clean up script if needed
-    if (this.$refs.container) {
-      const scripts = this.$refs.container.querySelectorAll('script')
-      scripts.forEach(script => script.remove())
-    }
-  }
+const container = ref(null)
+
+const loadWidget = () => {
+  const script = document.createElement('script')
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js'
+  script.async = true
+  script.type = 'text/javascript'
+  script.innerHTML = JSON.stringify({
+    width: '100%',
+    height: '600',
+    colorTheme: 'light',
+    isTransparent: false,
+    locale: 'ja',
+    importanceFilter: '0,1',
+    currencyFilter: 'AUD,USD,CAD,EUR,FRF,DEM,JPY,MXN,CHF,TRL,GBP'
+  })
+
+  container.value.appendChild(script)
 }
+
+onMounted(() => {
+  loadWidget()
+})
+
+onBeforeUnmount(() => {
+  // Clean up script if needed
+  if (container.value) {
+    const scripts = container.value.querySelectorAll('script')
+    scripts.forEach(script => script.remove())
+  }
+})
 </script>
 
 <style scoped>
